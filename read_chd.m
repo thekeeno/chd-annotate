@@ -117,21 +117,21 @@ function C = read_chd(varargin)
         C=setfield(C,SETUP_struct_2(i,2),fread(fileID,1,SETUP_struct_2(i,1)));
     end
 
-    %there's more data in there, sure, but this is as far as I will go for
-    %now.
+    %certain additional data is held much further along in the header. this may break, depending on which version of Phantom is used, so be careful!
+    
 
     fseek(fileID,0x28E8,'bof');
-    C.fDecimation = fread(fileID,1,'float32');
+    C.fDecimation = fread(fileID,1,'float32'); %get the level of decimation chosen when saving the file
 
     fseek(fileID,0x0674,'bof');
-    C.ShutterNs=fread(fileID,1,'uint32');
-    C.EDRShutterNs=fread(fileID,1,'uint32');
-    C.EDRMs=C.EDRShutterNs/1000;
+    C.ShutterNs=fread(fileID,1,'uint32'); %shutter speed in nanoseconds
+    C.EDRShutterNs=fread(fileID,1,'uint32'); %shutter EDR in nanoseconds
+    C.EDRMs=C.EDRShutterNs/1000; %convert EDR from ns to ms
 
     fseek(fileID,0x0354,'bof');
-    C.FrameRate32=fread(fileID,1,'uint32');
+    C.FrameRate32=fread(fileID,1,'uint32'); %frame rate, as 32-bit int
     fseek(fileID,0x28F4,'bof');
-    C.dFrameRate=fread(fileID,1,'double');
+    C.dFrameRate=fread(fileID,1,'double'); %frame rate, as double
     
     fclose(fileID); %close the file once we are done with it
 end
