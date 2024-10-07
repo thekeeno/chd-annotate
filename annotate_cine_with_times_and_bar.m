@@ -14,7 +14,7 @@ v = VideoReader(filename); %create videoreader object to read in frames from sel
 
 %the filename of the chd header needs to have the dot removed and then be
 %appended with .chd.
-chd_filename = regexprep(filename,'[.]','') + '.chd';
+chd_filename = video_filename_to_chd_filename(filename);
 
 %import the video's metadata (FPS, exposure, etc) using my custom read_chd func
 C = read_chd(chd_filename);
@@ -78,7 +78,7 @@ for fi = 1:decimate:(C.ImageCount)
         frame = insertText(frame,[scalebar_init_x scalebar_init_y-scalebar_text_gap-scalebar_thickness ],int2str(scalebar_length_um)+"μm",'BoxColor',scalebar_colour,'FontSize',scalebar_fontsize,"AnchorPoint", "LeftBottom");
     end
     if timestamp_enable
-        time_ms = 1000* fi/C.FrameRate16;
+        time_ms = 1000* fi/C.FrameRate32;
         frame = insertText(frame,[0 0],int2str(time_ms)+"ms",'BoxColor',timestamp_colour,'FontSize', timestamp_fontsize);
     end
     imshow(frame)
