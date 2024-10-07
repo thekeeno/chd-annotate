@@ -2,7 +2,7 @@ function C = read_chd(varargin)
     if nargin == 1
         filename = varargin{1};
     elseif nargin == 0
-        filename = "rubbed pi test 3mp4.chd";
+        filename = "example/example3.cine";
     else
         error("Too many input arguments");
     end
@@ -33,9 +33,9 @@ function C = read_chd(varargin)
     C.compression = fread(fileID,1,"ubit16");
     C.verison = fread(fileID,1,"ubit16"); %expect this to be one
     C.FirstMovieImage = fread(fileID,1,"bit32");
-    C.TotalImageCount = fread(fileID,1,"ubit32");
+    C.TotalImageCount = fread(fileID,1,"ubit32"); %total number of recorded images
     C.FirstImageNo = fread(fileID,1,"bit32");
-    C.ImageCount = fread(fileID,1,"ubit32");
+    C.ImageCount = fread(fileID,1,"ubit32"); %total number of stored images (may differe from TotalImageCount due to decimation at save)
     
     %other data offsets
     
@@ -47,7 +47,9 @@ function C = read_chd(varargin)
     %and does not work??
     
     ntp64 = fread(fileID,2,"uint32");
-    TriggerTime = datetime(ntp64(1) + 1/ntp64(2), "ConvertFrom", "epochtime", "epoch", "1900-01-01"); %this is broken for now.
+
+
+    C.TriggerTime = datetime(ntp64(2) , "ConvertFrom", "epochtime", "epoch", "1970-01-01"); %this is broken for now.
     
     
     %bitmapinfoheader - this contains data about the image size and color
@@ -62,8 +64,8 @@ function C = read_chd(varargin)
     "int32" "biYPelsPerMeter";
     "uint32" "biClrUsed";
     "uint32" "biClrImportant"];
-    s = size(BITMAPINFOHEADER_array);
-    s = s(1);
+    s = size(BITMAPINFOHEADER_array,1);
+
     
     for i = 1:s
         C = setfield(C,BITMAPINFOHEADER_array(i,2),fread(fileID,1,BITMAPINFOHEADER_array(i,1)));
@@ -117,6 +119,19 @@ function C = read_chd(varargin)
 
     %there's more data in there, sure, but this is as far as I will go for
     %now.
+
+    fseek(fileID,0x28E8,'bof');
+    C.fDecimation = fread(fileID,1,'float32');
+
+    fseek(fileID,0x0674,'bof');
+    C.ShutterNs=fread(fileID,1,'uint32');
+    C.EDRShutterNs=fread(fileID,1,'uint32');
+    C.EDRMs=C.EDRShutterNs/1000;
+
+    fseek(fileID,0x0354,'bof');
+    C.FrameRate32=fread(fileID,1,'uint32');
+    fseek(fileID,0x28F4,'bof');
+    C.dFrameRate=fread(fileID,1,'double');
     
     fclose(fileID); %close the file once we are done with it
 end
