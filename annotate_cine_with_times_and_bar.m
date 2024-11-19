@@ -55,7 +55,7 @@ scalebar_fontsize = 25;
 
 timestamp_enable = true;
 timestamp_colour = "yellow";
-timestamp_fontsize = 30;
+timestamp_fontsize = 25;
 
 
 for fi = 1:decimate:(C.ImageCount)
